@@ -31,7 +31,9 @@ class _MyAppState extends State<MyApp> {
       context,
       new MaterialPageRoute(
         builder: (context) => new PhotoFilterSelector(
-          title: Text("Photo Filter Example"),
+          title: Text("Add Filters", style: TextStyle(color: Colors.white),),
+          appBarColor: Color(0xff00bcc7),
+          appBarTextColor: Colors.white,
           image: image,
           filters: presetFiltersList,
           filename: fileName,

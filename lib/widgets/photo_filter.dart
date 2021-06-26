@@ -56,6 +56,7 @@ class PhotoFilter extends StatelessWidget {
 class PhotoFilterSelector extends StatefulWidget {
   final Widget title;
   final Color appBarColor;
+  final Color appBarTextColor;
   final List<Filter> filters;
   final imageLib.Image image;
   final Widget loader;
@@ -69,6 +70,7 @@ class PhotoFilterSelector extends StatefulWidget {
     required this.filters,
     required this.image,
     this.appBarColor = Colors.blue,
+    this.appBarTextColor = Colors.white,
     this.loader = const Center(child: CircularProgressIndicator()),
     this.fit = BoxFit.fill,
     required this.filename,
@@ -80,6 +82,7 @@ class PhotoFilterSelector extends StatefulWidget {
 }
 
 class _PhotoFilterSelectorState extends State<PhotoFilterSelector> {
+  ScrollController _scrollController = ScrollController();
   String? filename;
   Map<String, List<int>?> cachedFilters = {};
   Filter? _filter;
@@ -105,13 +108,17 @@ class _PhotoFilterSelectorState extends State<PhotoFilterSelector> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
+          iconTheme: IconThemeData(color: widget.appBarTextColor),
           title: widget.title,
           backgroundColor: widget.appBarColor,
           actions: <Widget>[
             loading
                 ? Container()
                 : IconButton(
-                    icon: Icon(Icons.check),
+                    icon: Icon(
+                      Icons.check,
+                      color: widget.appBarTextColor,
+                    ),
                     onPressed: () async {
                       setState(() {
                         loading = true;
@@ -129,25 +136,27 @@ class _PhotoFilterSelectorState extends State<PhotoFilterSelector> {
           child: loading
               ? widget.loader
               : Column(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Expanded(
-                      flex: 6,
-                      child: Container(
-                        width: double.infinity,
-                        height: double.infinity,
-                        padding: EdgeInsets.all(12.0),
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Expanded(
+                flex: 6,
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  // padding: EdgeInsets.all(12.0),
                         child: _buildFilteredImage(
-                          _filter,
-                          image,
-                          filename,
-                        ),
-                      ),
-                    ),
-                    Expanded(
+                    _filter,
+                    image,
+                    filename,
+                  ),
+                ),
+              ),
+              Expanded(
+                // filter thumbnails
                       flex: 2,
-                      child: Container(
-                        child: ListView.builder(
+                child: Container(
+                  child: ListView.builder(
+                    controller: _scrollController,
                           scrollDirection: Axis.horizontal,
                           itemCount: widget.filters.length,
                           itemBuilder: (BuildContext context, int index) {
@@ -159,75 +168,117 @@ class _PhotoFilterSelectorState extends State<PhotoFilterSelector> {
                                   children: <Widget>[
                                     _buildFilterThumbnail(
                                         widget.filters[index], image, filename),
-                                    SizedBox(
-                                      height: 5.0,
-                                    ),
-                                    Text(
-                                      widget.filters[index].name,
-                                    )
-                                  ],
-                                ),
+                              SizedBox(
+                                height: 5.0,
                               ),
-                              onTap: () => setState(() {
-                                _filter = widget.filters[index];
-                              }),
-                            );
-                          },
+                              Text(
+                                widget.filters[index].name,
+                              )
+                            ],
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
+                        onTap: () => setState(() {
+                                _filter = widget.filters[index];
+                                _scrollController.animateTo(
+                                    _scrollController.position.pixels + 20,
+                                    duration: new Duration(milliseconds: 500),
+                                    curve: Curves.ease);
+                              }),
+                      );
+                    },
+                  ),
                 ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   _buildFilterThumbnail(
-      Filter filter, imageLib.Image? image, String? filename) {
+    Filter filter,
+    imageLib.Image? image,
+    String? filename,
+  ) {
     if (cachedFilters[filter.name] == null) {
       return FutureBuilder<List<int>>(
-        future: compute(
-            applyFilter ,
-            <String, dynamic>{
-              "filter": filter,
-              "image": image,
-              "filename": filename,
-            }),
+        future: compute(applyFilter, <String, dynamic>{
+          "filter": filter,
+          "image": image,
+          "filename": filename,
+        }),
         builder: (BuildContext context, AsyncSnapshot<List<int>> snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
             case ConnectionState.active:
             case ConnectionState.waiting:
-              return CircleAvatar(
-                radius: 50.0,
-                child: Center(
-                  child: widget.loader,
+              return Container(
+                padding: EdgeInsets.all(1.5),
+                decoration: BoxDecoration(
+                    color: widget.appBarColor,
+                    borderRadius: BorderRadius.all(Radius.circular(90))),
+                child: Container(
+                  padding: EdgeInsets.all(1.5),
+                  decoration: BoxDecoration(
+                      color: widget.appBarTextColor,
+                      borderRadius: BorderRadius.all(Radius.circular(90))),
+                  child: CircleAvatar(
+                    radius: 35.0,
+                    child: Center(
+                      child: widget.loader,
+                    ),
+                    backgroundColor: Colors.white,
+                  ),
                 ),
-                backgroundColor: Colors.white,
               );
             case ConnectionState.done:
               if (snapshot.hasError)
                 return Center(child: Text('Error: ${snapshot.error}'));
               cachedFilters[filter.name] = snapshot.data;
-              return CircleAvatar(
-                radius: 50.0,
-                backgroundImage: MemoryImage(
-                  snapshot.data as dynamic,
+              return Container(
+                padding: EdgeInsets.all(1.5),
+                decoration: BoxDecoration(
+                    color: widget.appBarColor,
+                    borderRadius: BorderRadius.all(Radius.circular(90))),
+                child: Container(
+                  padding: EdgeInsets.all(1.5),
+                  decoration: BoxDecoration(
+                      color: widget.appBarTextColor,
+                      borderRadius: BorderRadius.all(Radius.circular(90))),
+                  child: CircleAvatar(
+                    radius: 35.0,
+                    backgroundImage: MemoryImage(
+                      snapshot.data as dynamic,
+                    ),
+                    backgroundColor: Colors.white,
+                  ),
                 ),
-                backgroundColor: Colors.white,
               );
           }
           // unreachable
         },
       );
     } else {
-      return CircleAvatar(
-        radius: 50.0,
-        backgroundImage: MemoryImage(
-          cachedFilters[filter.name] as dynamic,
+      return AnimatedContainer(
+        duration: Duration(milliseconds: 200),
+        padding: EdgeInsets.all(filter.name == _filter?.name ? 2.5 : 1.5),
+        decoration: BoxDecoration(
+            color: widget.appBarColor,
+            borderRadius: BorderRadius.all(Radius.circular(90))),
+        child: Container(
+          padding: EdgeInsets.all(1.5),
+          decoration: BoxDecoration(
+              color: widget.appBarTextColor,
+              borderRadius: BorderRadius.all(Radius.circular(90))),
+          child: CircleAvatar(
+            radius: 35.0,
+            backgroundImage: MemoryImage(
+              cachedFilters[filter.name] as dynamic,
+            ),
+            backgroundColor: Colors.white,
+          ),
         ),
-        backgroundColor: Colors.white,
       );
     }
   }
@@ -249,8 +300,7 @@ class _PhotoFilterSelectorState extends State<PhotoFilterSelector> {
     return imageFile;
   }
 
-  Widget _buildFilteredImage(
-      Filter? filter, imageLib.Image? image, String? filename) {
+  Widget _buildFilteredImage(Filter? filter, imageLib.Image? image, String? filename) {
     if (cachedFilters[filter?.name ?? "_"] == null) {
       return FutureBuilder<List<int>>(
         future: compute(
@@ -273,21 +323,21 @@ class _PhotoFilterSelectorState extends State<PhotoFilterSelector> {
               cachedFilters[filter?.name ?? "_"] = snapshot.data;
               return widget.circleShape
                   ? SizedBox(
-                      height: MediaQuery.of(context).size.width / 3,
-                      width: MediaQuery.of(context).size.width / 3,
-                      child: Center(
-                        child: CircleAvatar(
-                          radius: MediaQuery.of(context).size.width / 3,
-                          backgroundImage: MemoryImage(
-                            snapshot.data as dynamic,
-                          ),
-                        ),
-                      ),
-                    )
-                  : Image.memory(
+                height: MediaQuery.of(context).size.width / 3,
+                width: MediaQuery.of(context).size.width / 3,
+                child: Center(
+                  child: CircleAvatar(
+                    radius: MediaQuery.of(context).size.width / 3,
+                    backgroundImage: MemoryImage(
                       snapshot.data as dynamic,
-                      fit: BoxFit.contain,
-                    );
+                    ),
+                  ),
+                ),
+              )
+                  : Image.memory(
+                snapshot.data as dynamic,
+                fit: BoxFit.contain,
+              );
           }
           // unreachable
         },
@@ -295,21 +345,21 @@ class _PhotoFilterSelectorState extends State<PhotoFilterSelector> {
     } else {
       return widget.circleShape
           ? SizedBox(
-              height: MediaQuery.of(context).size.width / 3,
-              width: MediaQuery.of(context).size.width / 3,
-              child: Center(
-                child: CircleAvatar(
-                  radius: MediaQuery.of(context).size.width / 3,
-                  backgroundImage: MemoryImage(
-                    cachedFilters[filter?.name ?? "_"] as dynamic,
-                  ),
-                ),
-              ),
-            )
-          : Image.memory(
+        height: MediaQuery.of(context).size.width / 3,
+        width: MediaQuery.of(context).size.width / 3,
+        child: Center(
+          child: CircleAvatar(
+            radius: MediaQuery.of(context).size.width / 3,
+            backgroundImage: MemoryImage(
               cachedFilters[filter?.name ?? "_"] as dynamic,
-              fit: widget.fit,
-            );
+            ),
+          ),
+        ),
+      )
+          : Image.memory(
+        cachedFilters[filter?.name ?? "_"] as dynamic,
+        fit: widget.fit,
+      );
     }
   }
 }
