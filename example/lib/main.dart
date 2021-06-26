@@ -31,7 +31,7 @@ class _MyAppState extends State<MyApp> {
       context,
       new MaterialPageRoute(
         builder: (context) => new PhotoFilterSelector(
-          title: Text("Photo Filter Example Text"),
+          title: Text("Photo Filter Example Test"),
           image: image,
           filters: presetFiltersList,
           filename: fileName,
@@ -54,7 +54,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-        title: new Text('Photo Filter Example'),
+        title: new Text('Photo Filter Example Test'),
       ),
       body: Center(
         child: new Container(
