@@ -31,7 +31,7 @@ class _MyAppState extends State<MyApp> {
       context,
       new MaterialPageRoute(
         builder: (context) => new PhotoFilterSelector(
-          title: Text("Photo Filter Example Test"),
+          title: Text("Photo Filter Example Test 3"),
           image: image,
           filters: presetFiltersList,
           filename: fileName,
