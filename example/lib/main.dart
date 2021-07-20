@@ -23,10 +23,16 @@ class _MyAppState extends State<MyApp> {
   Future getImage(context) async {
     final pickedFile = await picker.getImage(source: ImageSource.gallery);
     if(pickedFile!=null){
-    imageFile = new File(pickedFile.path);
-    fileName = basename(imageFile.path);
-    var image = imageLib.decodeImage(await imageFile.readAsBytes());
-    image = imageLib.copyResize(image, width: 600);
+
+      imageFile = new File(pickedFile.path);
+      fileName = basename(imageFile.path);
+      var image = imageLib.decodeImage(await imageFile.readAsBytes());
+      image = imageLib.copyResize(image, width: 600);
+
+      File demoImageFile = new File('');
+      var demoImage = imageLib.decodeImage(await demoImageFile.readAsBytes());
+      demoImage = imageLib.copyResize(demoImage, width: 300);
+
     Map imagefile = await Navigator.push(
       context,
       new MaterialPageRoute(
@@ -35,6 +41,7 @@ class _MyAppState extends State<MyApp> {
           appBarColor: Color(0xff00bcc7),
           appBarTextColor: Colors.white,
           image: image,
+          demoImage: demoImage,
           filters: presetFiltersList,
           filename: fileName,
           loader: Center(child: CircularProgressIndicator()),

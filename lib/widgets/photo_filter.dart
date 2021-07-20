@@ -59,6 +59,7 @@ class PhotoFilterSelector extends StatefulWidget {
   final Color appBarTextColor;
   final List<Filter> filters;
   final imageLib.Image image;
+  final imageLib.Image demoImage;
   final Widget loader;
   final BoxFit fit;
   final String filename;
@@ -69,6 +70,7 @@ class PhotoFilterSelector extends StatefulWidget {
     required this.title,
     required this.filters,
     required this.image,
+    required this.demoImage,
     this.appBarColor = Colors.blue,
     this.appBarTextColor = Colors.white,
     this.loader = const Center(child: CircularProgressIndicator()),
@@ -87,6 +89,7 @@ class _PhotoFilterSelectorState extends State<PhotoFilterSelector> {
   Map<String, List<int>?> cachedFilters = {};
   Filter? _filter;
   imageLib.Image? image;
+  imageLib.Image? demoImage;
   late bool loading;
 
   @override
@@ -96,7 +99,9 @@ class _PhotoFilterSelectorState extends State<PhotoFilterSelector> {
     _filter = widget.filters[0];
     filename = widget.filename;
     image = widget.image;
-  }
+    demoImage = widget.demoImage;
+
+ }
 
   @override
   void dispose() {
@@ -167,7 +172,7 @@ class _PhotoFilterSelectorState extends State<PhotoFilterSelector> {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: <Widget>[
                                     _buildFilterThumbnail(
-                                        widget.filters[index], image, filename),
+                                        widget.filters[index], demoImage, filename),
                               SizedBox(
                                 height: 5.0,
                               ),
